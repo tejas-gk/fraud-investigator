@@ -1,5 +1,5 @@
 {
-  "name": "fraud-investigator-web",
+  "name": "azentio-ai-portal",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -7,6 +7,9 @@
     "start": "next start"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
+    "gsap": "^3.13.0",
+    "lenis": "^1.3.8",
     "next": "15.1.0",
     "react": "19.0.0",
     "react-dom": "19.0.0"
