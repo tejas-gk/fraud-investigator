@@ -3,226 +3,95 @@
 import { useMemo, useState } from "react";
 import "./styles.css";
 
-const scenarios = [
-  {
-    id: "account-takeover",
-    eyebrow: "01 / ACCOUNT TAKEOVER",
-    title: "A new device. An impossible transfer. One decision in milliseconds.",
-    score: 94,
-    decision: "PEND",
-    type: "Possible account takeover",
-    amount: "₹85,000",
-    account: "ACC-9281",
-    device: "DEVICE-NEW-881",
-    beneficiary: "BEN-774",
-    evidence: [
-      "New device fingerprint",
-      "18.4× normal transaction amount",
-      "7 transactions in 10 minutes",
-      "First-time beneficiary",
-      "Location inconsistent with customer history",
-    ],
-  },
-  {
-    id: "fraud-ring",
-    eyebrow: "02 / NETWORK FRAUD",
-    title: "Four accounts. One device. One beneficiary. A pattern hiding in plain sight.",
-    score: 97,
-    decision: "REJECT",
-    type: "Fraud ring detected",
-    amount: "₹2.4L",
-    account: "ACC-551",
-    device: "DEVICE-77",
-    beneficiary: "BEN-900",
-    evidence: [
-      "Shared device across 4 accounts",
-      "Shared IP across flagged transactions",
-      "Beneficiary connected to 5 risky accounts",
-      "Burst transfer pattern",
-      "Graph risk above critical threshold",
-    ],
-  },
-  {
-    id: "false-positive",
-    eyebrow: "03 / HUMAN REVIEW",
-    title: "High value does not always mean high risk. Context keeps good customers moving.",
-    score: 52,
-    decision: "REVIEW",
-    type: "Explainable anomaly",
-    amount: "₹70,000",
-    account: "ACC-204",
-    device: "DEVICE-204-A",
-    beneficiary: "BEN-014",
-    evidence: [
-      "Known device",
-      "Known beneficiary",
-      "Historically similar transfer",
-      "Amount above baseline",
-      "Manual review recommended",
-    ],
-  },
+type Role = "Public" | "Employee" | "Client" | "Moderator";
+
+const offerings = [
+  ["01", "Core banking", "Connected conventional and Islamic core banking foundations."],
+  ["02", "Digital banking", "Onboarding, omnichannel banking and payment experiences."],
+  ["03", "Lending", "Configurable lending journeys for retail and corporate banking."],
+  ["04", "Risk & compliance", "Financial-crime monitoring, investigation and regulatory workflows."],
+  ["05", "Trade & treasury", "Trade finance, treasury, risk and investment operations."],
+  ["06", "Collective intelligence", "Governed client observations transformed into shared, de-identified learning."],
+];
+
+const observations = [
+  { title: "Seasonality context in SME analysis", meta: "Lending · South Asia · 3 organisations", status: "Approved", body: "Seasonal cash-flow patterns can produce inconsistent interpretations when comparison periods are not made explicit." },
+  { title: "More context needed in transaction alerts", meta: "Risk & compliance · MEA · 4 organisations", status: "Approved", body: "Investigators benefit when alerts surface behavioural history and connected entities alongside rule triggers." },
+  { title: "Faster digital onboarding hand-offs", meta: "Digital banking · APAC · 3 organisations", status: "Approved", body: "Clients report friction when identity checks require a manual hand-off without a clear progress state." },
+];
+
+const experiments = [
+  { title: "Financial Analysis Intelligence", owner: "Banking AI Lab", status: "Under review", desc: "Seasonality-aware comparison explanations using synthetic SME statements." },
+  { title: "AMLOCK Investigation Copilot", owner: "Risk & Compliance", status: "In progress", desc: "Evidence-first summaries for synthetic transaction-monitoring cases." },
+  { title: "Digital Onboarding Assistant", owner: "Digital Banking", status: "Proposed", desc: "Guided synthetic onboarding with transparent validation and escalation." },
 ];
 
 export default function Home() {
-  const [active, setActive] = useState(0);
-  const caseData = useMemo(() => scenarios[active], [active]);
+  const [role, setRole] = useState<Role>("Public");
+  const [activeOffering, setActiveOffering] = useState(0);
+  const [draft, setDraft] = useState("");
+  const [share, setShare] = useState("Private to me");
+  const [submitted, setSubmitted] = useState(false);
+  const offering = useMemo(() => offerings[activeOffering], [activeOffering]);
 
   return (
     <main className="site-shell">
       <header className="nav-wrap">
-        <a href="#top" className="brand" aria-label="Fraud Investigator home">
-          <span className="brand-mark">FI</span>
-          <span>Fraud Investigator</span>
-        </a>
-        <nav>
-          <a href="#system">System</a>
-          <a href="#cases">Cases</a>
-          <a href="#investigate">Investigate</a>
-          <a href="http://localhost:8000/docs" target="_blank">API ↗</a>
-        </nav>
+        <a href="#top" className="brand"><span className="brand-word">azentio</span><span className="brand-dot">.ai</span></a>
+        <nav><a href="#solutions">Banking</a><a href="#learning">Collective learning</a><a href="#portal">Portal</a><a href="#aira">AIRA</a></nav>
+        <div className="role-switcher">
+          <span>VIEW AS</span>
+          <select value={role} onChange={(e) => setRole(e.target.value as Role)}>{["Public","Employee","Client","Moderator"].map(r => <option key={r}>{r}</option>)}</select>
+        </div>
       </header>
 
       <section id="top" className="hero-section">
-        <div className="hero-grid" />
-        <div className="hero-orb hero-orb-a" />
-        <div className="hero-orb hero-orb-b" />
-
+        <div className="hero-grid"/><div className="hero-orb hero-orb-a"/><div className="hero-orb hero-orb-b"/>
         <div className="hero-copy">
-          <p className="kicker">REAL-TIME FRAUD INTELLIGENCE / 2026</p>
-          <h1>
-            Catch fraud
-            <span>before money moves.</span>
-          </h1>
+          <p className="kicker">AZENTIO.AI / BANKING INTELLIGENCE / 2026</p>
+          <h1>Build intelligence.<span>Create shared value.</span></h1>
           <div className="hero-bottom">
-            <p>
-              A risk engine that combines behavioral signals, rules, network intelligence and explainable investigation evidence into one decision surface.
-            </p>
-            <a href="#investigate" className="round-cta" aria-label="Explore investigation demo">
-              <span>Explore</span>
-              <strong>↓</strong>
-            </a>
+            <p>An enterprise AI experience for banking: discover Azentio capabilities, explore governed sandboxes and turn market observations into collective learning without exposing private client information.</p>
+            <a href="#portal" className="round-cta"><span>Enter</span><strong>↓</strong></a>
           </div>
         </div>
-
-        <div className="ticker" aria-hidden="true">
-          <div>ALLOW · PEND · REJECT · INVESTIGATE · EXPLAIN · ALLOW · PEND · REJECT · INVESTIGATE · EXPLAIN ·</div>
-        </div>
+        <div className="ticker"><div>CORE BANKING · DIGITAL · LENDING · RISK & COMPLIANCE · TRADE FINANCE · TREASURY · COLLECTIVE LEARNING ·</div></div>
       </section>
 
-      <section id="system" className="statement-section">
-        <div className="section-label">THE SYSTEM</div>
-        <p className="statement">
-          Fraud detection should not be a black box. Every score should come with a reason, every reason with evidence, and every action with an audit trail.
-        </p>
+      <section className="statement-section">
+        <div className="section-label">BANKING, FORWARD</div>
+        <p className="statement">Technology for financial institutions that connects deep banking capability with purposeful AI, governed collaboration and human oversight.</p>
       </section>
 
-      <section className="pipeline-section">
-        <div className="section-label light">HOW IT THINKS</div>
-        <div className="pipeline-row">
-          {[
-            ["01", "Observe", "Device, velocity, amount, location, beneficiary and history."],
-            ["02", "Score", "Rules, behavioral features and graph risk become a unified score."],
-            ["03", "Investigate", "Connected entities expose rings, reused devices and hidden relationships."],
-            ["04", "Decide", "Allow, pend, reject or escalate with a human-readable evidence trail."],
-          ].map(([num, title, body]) => (
-            <article className="pipeline-card" key={num}>
-              <div className="pipeline-num">{num}</div>
-              <h2>{title}</h2>
-              <p>{body}</p>
-            </article>
-          ))}
+      <section id="solutions" className="pipeline-section">
+        <div className="section-label light">BANKING CAPABILITIES</div>
+        <div className="pipeline-row offering-grid">
+          {offerings.map((item, i) => <button key={item[0]} onClick={() => setActiveOffering(i)} className={`pipeline-card offering-card ${i===activeOffering?"selected":""}`}><div className="pipeline-num">{item[0]}</div><h2>{item[1]}</h2><p>{item[2]}</p></button>)}
         </div>
+        <div className="feature-callout"><span>SELECTED CAPABILITY</span><strong>{offering[1]}</strong><p>{offering[2]} The prototype uses synthetic data and simulated outputs only.</p></div>
       </section>
 
-      <section id="cases" className="cases-section">
-        <div className="case-heading-row">
-          <div>
-            <div className="section-label">DEMO CASES</div>
-            <h2>Patterns worth stopping for.</h2>
-          </div>
-          <p>Three seeded scenarios show how the same engine reacts differently when context changes.</p>
-        </div>
-
-        <div className="case-list">
-          {scenarios.map((scenario, index) => (
-            <button
-              key={scenario.id}
-              className={`case-row ${active === index ? "active" : ""}`}
-              onClick={() => setActive(index)}
-            >
-              <span>{scenario.eyebrow}</span>
-              <strong>{scenario.title}</strong>
-              <span className="case-score">{scenario.score}/100</span>
-            </button>
-          ))}
-        </div>
+      <section id="learning" className="cases-section">
+        <div className="case-heading-row"><div><div className="section-label">COLLECTIVE LEARNING</div><h2>Learn together. Share safely.</h2></div><p>Approved, de-identified observations become searchable evidence for authorised participants. Private drafts remain private.</p></div>
+        <div className="insight-grid">{observations.map((x,i)=><article className="insight-card" key={x.title}><span>0{i+1} / {x.status.toUpperCase()}</span><h3>{x.title}</h3><p>{x.body}</p><small>{x.meta}</small></article>)}</div>
       </section>
 
-      <section id="investigate" className="investigation-section">
-        <div className="investigation-header">
-          <div>
-            <div className="section-label light">LIVE INVESTIGATION</div>
-            <h2>{caseData.type}</h2>
-          </div>
-          <div className={`decision decision-${caseData.decision.toLowerCase()}`}>
-            {caseData.decision}
-          </div>
-        </div>
-
-        <div className="investigation-grid">
-          <div className="risk-panel">
-            <div className="risk-topline">
-              <span>RISK SCORE</span>
-              <span>CASE / {caseData.id.toUpperCase()}</span>
-            </div>
-            <div className="risk-score">{caseData.score}<small>/100</small></div>
-            <div className="risk-meter"><span style={{ width: `${caseData.score}%` }} /></div>
-            <p>{caseData.title}</p>
-          </div>
-
-          <div className="facts-panel">
-            <div className="fact"><span>AMOUNT</span><strong>{caseData.amount}</strong></div>
-            <div className="fact"><span>ACCOUNT</span><strong>{caseData.account}</strong></div>
-            <div className="fact"><span>DEVICE</span><strong>{caseData.device}</strong></div>
-            <div className="fact"><span>BENEFICIARY</span><strong>{caseData.beneficiary}</strong></div>
-          </div>
-
-          <div className="network-panel">
-            <div className="network-canvas">
-              <div className="node node-account">ACCOUNT</div>
-              <div className="node node-device">DEVICE</div>
-              <div className="node node-ip">IP</div>
-              <div className="node node-beneficiary">BENEFICIARY</div>
-              <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                <line x1="26" y1="50" x2="50" y2="24" />
-                <line x1="26" y1="50" x2="53" y2="76" />
-                <line x1="50" y1="24" x2="78" y2="51" />
-                <line x1="53" y1="76" x2="78" y2="51" />
-              </svg>
-            </div>
-            <p>Entity graph connects accounts, devices, IPs and beneficiaries so suspicious reuse becomes visible.</p>
-          </div>
-
-          <div className="evidence-panel">
-            <div className="evidence-title">EVIDENCE</div>
-            {caseData.evidence.map((item, index) => (
-              <div className="evidence-item" key={item}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <p>{item}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+      <section id="portal" className="portal-section">
+        <div className="portal-head"><div><div className="section-label light">SECURE COLLABORATION PORTAL</div><h2>{role} experience</h2></div><div className="identity-pill"><i/> Demo identity · {role}</div></div>
+        {role === "Public" && <div className="role-panel"><div className="role-copy"><span>PUBLIC DISCOVERY</span><h3>Explore products, insights and approved media.</h3><p>Public visitors can discover Azentio banking capabilities, request a demo and register interest without access to private workspaces or internal content.</p></div><div className="permission-card"><b>Available</b><p>Product catalogue</p><p>Approved insights</p><p>Demo enquiry</p><p>Events</p></div></div>}
+        {role === "Employee" && <div className="experiment-grid">{experiments.map(x=><article className="experiment" key={x.title}><span>{x.status}</span><h3>{x.title}</h3><p>{x.desc}</p><small>{x.owner}</small></article>)}</div>}
+        {role === "Client" && <div className="client-grid"><div className="workspace-card"><span>ACTIVE WORKSPACE</span><h3>Northstar Bank · Sandbox</h3><p>Entitled demos: Digital Banking, Lending, Risk & Compliance</p><div className="mini-stats"><b>3<small>Entitlements</small></b><b>2<small>Observations</small></b><b>1<small>Idea update</small></b></div></div><div className="permission-card"><b>Workspace controls</b><p>Tenant-isolated demo runs</p><p>Private contribution tracking</p><p>Approved shared learning</p><p>Invitation-only briefings</p></div></div>}
+        {role === "Moderator" && <div className="moderation-card"><div><span>REVIEW QUEUE / 03</span><h3>Seasonal SME cash-flow treatment</h3><p>Proposed shared copy has been de-identified. Review evidence quality and audience before publication.</p></div><div className="moderation-actions"><button>Request clarification</button><button>Reject</button><button className="primary">Publish approved copy</button></div></div>}
       </section>
 
-      <section className="closing-section">
-        <p>FROM TRANSACTION</p>
-        <h2>to evidence.<br />to action.</h2>
-        <div className="closing-foot">
-          <span>Fraud Investigator / Hackathon Prototype</span>
-          <a href="https://github.com/tejas-gk/fraud-investigator" target="_blank">View source ↗</a>
-        </div>
+      <section className="contribution-section">
+        <div className="contribution-copy"><div className="section-label">OBSERVATION CAPTURE</div><h2>Private first.<br/>Shared by choice.</h2><p>Do not enter customer identities, account numbers, transaction-level data, credentials or confidential contractual information. This hackathon experience uses synthetic information only.</p></div>
+        <div className="contribution-form"><label>Market observation<textarea value={draft} onChange={e=>{setDraft(e.target.value);setSubmitted(false)}} placeholder="Example: We are seeing seasonal SME cash flow create inconsistent comparison outcomes..."/></label><label>Who can see this version?<select value={share} onChange={e=>setShare(e.target.value)}><option>Private to me</option><option>My organisation</option><option>Propose for learning community</option></select></label><button onClick={()=>setSubmitted(Boolean(draft.trim()))}>Save {share === "Private to me" ? "private draft" : "observation"}</button>{submitted && <p className="success-note">Saved as {share.toLowerCase()}. Shared publication still requires moderation.</p>}</div>
       </section>
+
+      <section id="aira" className="aira-section"><div className="aira-mark">AIRA</div><div><span>AI-ASSISTED SYNTHESIS</span><h2>Answers grounded in permitted evidence.</h2><p>AIRA summarises authorised, approved contributions with evidence references. Retrieval and synthesis do not automatically retrain a model, and withdrawn shared material is excluded from future retrieval.</p><div className="aira-answer"><small>DEMO QUERY</small><b>What are clients observing about SME seasonality?</b><p>Three synthetic organisations report that seasonal cash-flow context can affect comparison consistency. The sample is small; treat this as an emerging theme, not proof of market prevalence.</p><em>Evidence · 3 approved contributions · Synthetic demo</em></div></div></section>
+
+      <section className="closing-section"><p>PUBLIC DISCOVERY · EMPLOYEE INNOVATION · CLIENT COLLABORATION</p><h2>intelligence,<br/>governed.</h2><div className="closing-foot"><span>azentio.ai / Hackathon prototype / Dummy backend</span><a href="https://www.azentio.com/" target="_blank">Azentio ↗</a></div></section>
     </main>
   );
 }
