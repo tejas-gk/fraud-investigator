@@ -1,97 +1,130 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import "./styles.css";
+import { useEffect, useMemo, useRef, useState } from "react";
+import gsap from "gsap";
+import ScrollTrigger from "gsap/ScrollTrigger";
+import Lenis from "lenis";
+
+gsap.registerPlugin(ScrollTrigger);
 
 type Role = "Public" | "Employee" | "Client" | "Moderator";
 
 const offerings = [
-  ["01", "Core banking", "Connected conventional and Islamic core banking foundations."],
-  ["02", "Digital banking", "Onboarding, omnichannel banking and payment experiences."],
-  ["03", "Lending", "Configurable lending journeys for retail and corporate banking."],
-  ["04", "Risk & compliance", "Financial-crime monitoring, investigation and regulatory workflows."],
-  ["05", "Trade & treasury", "Trade finance, treasury, risk and investment operations."],
-  ["06", "Collective intelligence", "Governed client observations transformed into shared, de-identified learning."],
+  { n:"01", title:"Core banking", short:"One connected foundation.", body:"Conventional and Islamic banking foundations designed for modern financial institutions." },
+  { n:"02", title:"Digital banking", short:"Every channel, connected.", body:"Digital onboarding, omnichannel experiences and payments shaped around the customer journey." },
+  { n:"03", title:"Lending", short:"Credit journeys, configurable.", body:"Retail and corporate lending experiences with transparent workflows and human oversight." },
+  { n:"04", title:"Risk & compliance", short:"See risk in context.", body:"Financial-crime monitoring, investigation and regulatory workflows with evidence-first intelligence." },
+  { n:"05", title:"Trade & treasury", short:"Complex operations, made clear.", body:"Trade finance, treasury, investment and risk operations brought into one coherent experience." },
+  { n:"06", title:"Collective intelligence", short:"Learn together. Share safely.", body:"Governed client observations become de-identified, moderated learning for authorised participants." },
 ];
 
-const observations = [
-  { title: "Seasonality context in SME analysis", meta: "Lending · South Asia · 3 organisations", status: "Approved", body: "Seasonal cash-flow patterns can produce inconsistent interpretations when comparison periods are not made explicit." },
-  { title: "More context needed in transaction alerts", meta: "Risk & compliance · MEA · 4 organisations", status: "Approved", body: "Investigators benefit when alerts surface behavioural history and connected entities alongside rule triggers." },
-  { title: "Faster digital onboarding hand-offs", meta: "Digital banking · APAC · 3 organisations", status: "Approved", body: "Clients report friction when identity checks require a manual hand-off without a clear progress state." },
-];
-
-const experiments = [
-  { title: "Financial Analysis Intelligence", owner: "Banking AI Lab", status: "Under review", desc: "Seasonality-aware comparison explanations using synthetic SME statements." },
-  { title: "AMLOCK Investigation Copilot", owner: "Risk & Compliance", status: "In progress", desc: "Evidence-first summaries for synthetic transaction-monitoring cases." },
-  { title: "Digital Onboarding Assistant", owner: "Digital Banking", status: "Proposed", desc: "Guided synthetic onboarding with transparent validation and escalation." },
+const learning = [
+  ["Seasonality context", "Lending", "Three fictional organisations observe inconsistent treatment of seasonal SME cash flow."],
+  ["Alert context", "Risk & compliance", "Investigators value behavioural history and connected-entity evidence alongside rule triggers."],
+  ["Onboarding hand-offs", "Digital banking", "Clear progress states reduce friction when identity checks move into human review."],
 ];
 
 export default function Home() {
+  const root = useRef<HTMLElement>(null);
   const [role, setRole] = useState<Role>("Public");
-  const [activeOffering, setActiveOffering] = useState(0);
+  const [active, setActive] = useState(0);
   const [draft, setDraft] = useState("");
-  const [share, setShare] = useState("Private to me");
-  const [submitted, setSubmitted] = useState(false);
-  const offering = useMemo(() => offerings[activeOffering], [activeOffering]);
+  const [visibility, setVisibility] = useState("Private to me");
+  const [saved, setSaved] = useState(false);
+  const selected = useMemo(() => offerings[active], [active]);
+
+  useEffect(() => {
+    const lenis = new Lenis({ lerp: .09, wheelMultiplier: .8, smoothWheel: true });
+    let raf = 0;
+    const loop = (t:number) => { lenis.raf(t); raf = requestAnimationFrame(loop); };
+    raf = requestAnimationFrame(loop);
+    lenis.on("scroll", ScrollTrigger.update);
+    return () => { cancelAnimationFrame(raf); lenis.destroy(); };
+  }, []);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      if (window.innerWidth > 900) {
+        gsap.to(".hero-line", { xPercent: -52, ease:"none", scrollTrigger:{ trigger:".hero-track", start:"top top", end:"bottom bottom", scrub:.6 } });
+        gsap.fromTo(".hero-line", { opacity:0, y:80 }, { opacity:1, y:0, duration:1.1, ease:"expo.out" });
+        gsap.to(".orbit-1", { x:"-28vw", scrollTrigger:{ trigger:".principles", start:"top bottom", end:"center center", scrub:1 } });
+        gsap.to(".orbit-3", { x:"28vw", scrollTrigger:{ trigger:".principles", start:"top bottom", end:"center center", scrub:1 } });
+      }
+      gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach(el => gsap.from(el, { y:60, opacity:0, duration:1, ease:"expo.out", scrollTrigger:{ trigger:el, start:"top 86%" } }));
+    }, root);
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <main className="site-shell">
-      <header className="nav-wrap">
-        <a href="#top" className="brand"><span className="brand-word">azentio</span><span className="brand-dot">.ai</span></a>
-        <nav><a href="#solutions">Banking</a><a href="#learning">Collective learning</a><a href="#portal">Portal</a><a href="#aira">AIRA</a></nav>
-        <div className="role-switcher">
-          <span>VIEW AS</span>
-          <select value={role} onChange={(e) => setRole(e.target.value as Role)}>{["Public","Employee","Client","Moderator"].map(r => <option key={r}>{r}</option>)}</select>
-        </div>
+    <main ref={root} className="site">
+      <header className="floating-header">
+        <a className="logo" href="#top"><b>azentio</b><i>.ai</i></a>
+        <div className="menu-pill"><a href="#banking">Banking</a><a href="#learning">Learning</a><a href="#portal">Portal</a><a href="#aira">AIRA</a></div>
+        <div className="view-pill"><span>View as</span><select value={role} onChange={e=>setRole(e.target.value as Role)}>{["Public","Employee","Client","Moderator"].map(x=><option key={x}>{x}</option>)}</select></div>
       </header>
 
-      <section id="top" className="hero-section">
-        <div className="hero-grid"/><div className="hero-orb hero-orb-a"/><div className="hero-orb hero-orb-b"/>
-        <div className="hero-copy">
-          <p className="kicker">AZENTIO.AI / BANKING INTELLIGENCE / 2026</p>
-          <h1>Build intelligence.<span>Create shared value.</span></h1>
-          <div className="hero-bottom">
-            <p>An enterprise AI experience for banking: discover Azentio capabilities, explore governed sandboxes and turn market observations into collective learning without exposing private client information.</p>
-            <a href="#portal" className="round-cta"><span>Enter</span><strong>↓</strong></a>
-          </div>
+      <section id="top" className="hero-track">
+        <div className="hero-sticky">
+          <div className="ambient a"/><div className="ambient b"/>
+          <div className="hero-meta"><span>ENTERPRISE AI FOR BANKING</span><span>HACKATHON / 2026</span></div>
+          <h1 className="hero-line">Build intelligence. Create shared value.</h1>
+          <div className="hero-note"><span>01 / AZENTIO.AI</span><p>Public discovery. Employee innovation. Client collaboration. Governed collective learning that improves the offering.</p></div>
         </div>
-        <div className="ticker"><div>CORE BANKING · DIGITAL · LENDING · RISK & COMPLIANCE · TRADE FINANCE · TREASURY · COLLECTIVE LEARNING ·</div></div>
       </section>
 
-      <section className="statement-section">
-        <div className="section-label">BANKING, FORWARD</div>
-        <p className="statement">Technology for financial institutions that connects deep banking capability with purposeful AI, governed collaboration and human oversight.</p>
+      <section className="intro section-pad">
+        <SectionHead title="The platform" lines={["Banking,", "built forward."]}>An enterprise AI website and secure collaboration portal where banking expertise, synthetic sandboxes and governed learning live as one experience.</SectionHead>
       </section>
 
-      <section id="solutions" className="pipeline-section">
-        <div className="section-label light">BANKING CAPABILITIES</div>
-        <div className="pipeline-row offering-grid">
-          {offerings.map((item, i) => <button key={item[0]} onClick={() => setActiveOffering(i)} className={`pipeline-card offering-card ${i===activeOffering?"selected":""}`}><div className="pipeline-num">{item[0]}</div><h2>{item[1]}</h2><p>{item[2]}</p></button>)}
+      <section className="principles">
+        <div className="principle-sticky">
+          <div className="orbit orbit-1"><span>DISCOVER</span></div><div className="orbit orbit-2"><span>COLLABORATE</span></div><div className="orbit orbit-3"><span>LEARN</span></div>
+          <div className="principle-word">AZENTIO</div>
         </div>
-        <div className="feature-callout"><span>SELECTED CAPABILITY</span><strong>{offering[1]}</strong><p>{offering[2]} The prototype uses synthetic data and simulated outputs only.</p></div>
       </section>
 
-      <section id="learning" className="cases-section">
-        <div className="case-heading-row"><div><div className="section-label">COLLECTIVE LEARNING</div><h2>Learn together. Share safely.</h2></div><p>Approved, de-identified observations become searchable evidence for authorised participants. Private drafts remain private.</p></div>
-        <div className="insight-grid">{observations.map((x,i)=><article className="insight-card" key={x.title}><span>0{i+1} / {x.status.toUpperCase()}</span><h3>{x.title}</h3><p>{x.body}</p><small>{x.meta}</small></article>)}</div>
+      <section id="banking" className="banking section-pad">
+        <SectionHead title="Banking" lines={["Deep capability.", "One ecosystem."]}>From core banking to risk and compliance, the public experience makes Azentio&apos;s banking capability understandable before a visitor ever enters a workspace.</SectionHead>
+        <div className="service-list">
+          {offerings.map((x,i)=><button key={x.n} onMouseEnter={()=>setActive(i)} onClick={()=>setActive(i)} className={active===i?"active":""}><span>{x.n}</span><strong>{x.title}</strong><em>{x.short}</em><b>↗</b></button>)}
+        </div>
+        <div className="selected-service"><span>{selected.n} / SELECTED</span><h3>{selected.title}</h3><p>{selected.body}</p><div className="service-art"><i/><i/><i/><i/></div></div>
       </section>
 
-      <section id="portal" className="portal-section">
-        <div className="portal-head"><div><div className="section-label light">SECURE COLLABORATION PORTAL</div><h2>{role} experience</h2></div><div className="identity-pill"><i/> Demo identity · {role}</div></div>
-        {role === "Public" && <div className="role-panel"><div className="role-copy"><span>PUBLIC DISCOVERY</span><h3>Explore products, insights and approved media.</h3><p>Public visitors can discover Azentio banking capabilities, request a demo and register interest without access to private workspaces or internal content.</p></div><div className="permission-card"><b>Available</b><p>Product catalogue</p><p>Approved insights</p><p>Demo enquiry</p><p>Events</p></div></div>}
-        {role === "Employee" && <div className="experiment-grid">{experiments.map(x=><article className="experiment" key={x.title}><span>{x.status}</span><h3>{x.title}</h3><p>{x.desc}</p><small>{x.owner}</small></article>)}</div>}
-        {role === "Client" && <div className="client-grid"><div className="workspace-card"><span>ACTIVE WORKSPACE</span><h3>Northstar Bank · Sandbox</h3><p>Entitled demos: Digital Banking, Lending, Risk & Compliance</p><div className="mini-stats"><b>3<small>Entitlements</small></b><b>2<small>Observations</small></b><b>1<small>Idea update</small></b></div></div><div className="permission-card"><b>Workspace controls</b><p>Tenant-isolated demo runs</p><p>Private contribution tracking</p><p>Approved shared learning</p><p>Invitation-only briefings</p></div></div>}
-        {role === "Moderator" && <div className="moderation-card"><div><span>REVIEW QUEUE / 03</span><h3>Seasonal SME cash-flow treatment</h3><p>Proposed shared copy has been de-identified. Review evidence quality and audience before publication.</p></div><div className="moderation-actions"><button>Request clarification</button><button>Reject</button><button className="primary">Publish approved copy</button></div></div>}
+      <section id="learning" className="learning section-pad">
+        <SectionHead title="Collective learning" lines={["Private first.", "Shared by choice."]}>Clients submit observations as private drafts. Only reviewed, appropriately de-identified contributions become shared learning for authorised participants.</SectionHead>
+        <div className="learning-grid">{learning.map((x,i)=><article key={x[0]} data-reveal><div><span>0{i+1}</span><small>APPROVED / SYNTHETIC</small></div><h3>{x[0]}</h3><p>{x[2]}</p><footer>{x[1]} · 3+ organisations</footer></article>)}</div>
       </section>
 
-      <section className="contribution-section">
-        <div className="contribution-copy"><div className="section-label">OBSERVATION CAPTURE</div><h2>Private first.<br/>Shared by choice.</h2><p>Do not enter customer identities, account numbers, transaction-level data, credentials or confidential contractual information. This hackathon experience uses synthetic information only.</p></div>
-        <div className="contribution-form"><label>Market observation<textarea value={draft} onChange={e=>{setDraft(e.target.value);setSubmitted(false)}} placeholder="Example: We are seeing seasonal SME cash flow create inconsistent comparison outcomes..."/></label><label>Who can see this version?<select value={share} onChange={e=>setShare(e.target.value)}><option>Private to me</option><option>My organisation</option><option>Propose for learning community</option></select></label><button onClick={()=>setSubmitted(Boolean(draft.trim()))}>Save {share === "Private to me" ? "private draft" : "observation"}</button>{submitted && <p className="success-note">Saved as {share.toLowerCase()}. Shared publication still requires moderation.</p>}</div>
+      <section id="portal" className="portal section-pad">
+        <SectionHead title="The portal" lines={["Identity aware.", "Tenant aware."]}>The challenge calls for distinct public, employee and client experiences. This prototype lets judges move between them while the real backend remains intentionally mocked.</SectionHead>
+        <div className="portal-toolbar"><div><i/>DEMO IDENTITY</div>{(["Public","Employee","Client","Moderator"] as Role[]).map(x=><button className={role===x?"active":""} key={x} onClick={()=>setRole(x)}>{x}</button>)}</div>
+        <RoleExperience role={role}/>
       </section>
 
-      <section id="aira" className="aira-section"><div className="aira-mark">AIRA</div><div><span>AI-ASSISTED SYNTHESIS</span><h2>Answers grounded in permitted evidence.</h2><p>AIRA summarises authorised, approved contributions with evidence references. Retrieval and synthesis do not automatically retrain a model, and withdrawn shared material is excluded from future retrieval.</p><div className="aira-answer"><small>DEMO QUERY</small><b>What are clients observing about SME seasonality?</b><p>Three synthetic organisations report that seasonal cash-flow context can affect comparison consistency. The sample is small; treat this as an emerging theme, not proof of market prevalence.</p><em>Evidence · 3 approved contributions · Synthetic demo</em></div></div></section>
+      <section className="capture section-pad">
+        <div className="capture-copy" data-reveal><span>OBSERVATION CAPTURE</span><h2>Private first.<br/><i>Shared by choice.</i></h2><p>Do not enter customer identities, account numbers, transaction-level data, credentials or confidential contractual terms. The hackathon uses synthetic information.</p></div>
+        <div className="capture-form" data-reveal><label>Market observation<textarea value={draft} onChange={e=>{setDraft(e.target.value);setSaved(false)}} placeholder="What are you observing in the market?"/></label><label>Audience<select value={visibility} onChange={e=>setVisibility(e.target.value)}><option>Private to me</option><option>My organisation</option><option>Propose for learning community</option></select></label><button onClick={()=>setSaved(!!draft.trim())}>Save observation <b>↗</b></button>{saved&&<small>Saved as {visibility.toLowerCase()}. Community publication still requires moderation.</small>}</div>
+      </section>
 
-      <section className="closing-section"><p>PUBLIC DISCOVERY · EMPLOYEE INNOVATION · CLIENT COLLABORATION</p><h2>intelligence,<br/>governed.</h2><div className="closing-foot"><span>azentio.ai / Hackathon prototype / Dummy backend</span><a href="https://www.azentio.com/" target="_blank">Azentio ↗</a></div></section>
+      <section id="aira" className="aira section-pad">
+        <div className="aira-label">AIRA</div><div className="aira-content" data-reveal><span>AI-ASSISTED SYNTHESIS</span><h2>Evidence in.<br/>Clarity out.</h2><p>AIRA summarises only permitted evidence and cites approved contributions. Retrieval and synthesis are not model retraining.</p><div className="answer"><small>DEMO QUERY / SYNTHETIC DATA</small><h3>What are clients observing about SME seasonality?</h3><p>Three fictional organisations report that seasonal cash-flow context can affect comparison consistency. The sample is small; treat this as an emerging theme, not proof of prevalence.</p><footer><span>03 approved contributions</span><span>Confidence / limited sample</span></footer></div></div>
+      </section>
+
+      <section className="finale"><div className="finale-grid">{["PUBLIC","EMPLOYEE","CLIENT","LEARNING","AIRA","GOVERNED","BANKING","AI","AZENTIO"].map((x,i)=><div key={x} className={i===8?"brand-cell":""}>{x}</div>)}</div><h2>Build intelligence.<br/><i>Create shared value.</i></h2><div className="finale-foot"><span>azentio.ai / Hackathon prototype</span><span>Dummy backend · Synthetic data</span></div></section>
     </main>
   );
+}
+
+function SectionHead({title,lines,children}:{title:string;lines:string[];children:React.ReactNode}){return <div className="section-head" data-reveal><h2>{title}</h2><div className="head-lines">{lines.map(x=><span key={x}>{x}</span>)}</div><p>{children}</p></div>}
+
+function RoleExperience({role}:{role:Role}){
+ const data={
+  Public:["Public discovery","Understand the offering before signing in.",["Product catalogue","Approved insights","Media & events","Demo enquiries"]],
+  Employee:["Employee innovation","A private place to experiment and improve.",["Internal Playground","Experiments","Live sessions","Improvement ideas"]],
+  Client:["Northstar Bank","A tenant-isolated workspace with entitled experiences.",["Entitled sandboxes","My observations","Shared learning","Idea updates"]],
+  Moderator:["Learning moderation","Review what is safe to share across the community.",["Review queue","Redaction","Publish / reject","Reports & withdrawal"]],
+ } as const;
+ const x=data[role];
+ return <div className="role-experience"><div><span>{role.toUpperCase()} EXPERIENCE</span><h3>{x[0]}</h3><p>{x[1]}</p></div><div className="role-links">{x[2].map((y,i)=><div key={y}><span>0{i+1}</span><b>{y}</b><i>↗</i></div>)}</div></div>
 }
